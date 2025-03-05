@@ -1,18 +1,26 @@
 "use client";
 import { apiEndpoints, navigationUrls } from "@/config";
-import { useFeedbackStore } from "@/features/feedback-store/context";
+import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { FaCheckCircle } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import Link from "next/link";
 import { FeedbackPostPayload } from "@/schemas/feedback";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const text = useFeedbackStore((s) => s.feedback);
+  const router = useRouter();
+  const text = useGlobalStore((s) => s.feedback);
+  const language = useGlobalStore((s) => s.language);
+  const setFeedback = useGlobalStore((s) => s.setFeedback);
   const payload: FeedbackPostPayload = {
     text,
-    language: "en-US",
+    language,
+  };
+
+  const handleClose = () => {
+    setFeedback("");
+    router.push(navigationUrls.home);
   };
 
   const getQuery = useQuery({
@@ -49,12 +57,14 @@ export default function Page() {
           ))}
         </ol>
       </div>
-      <Link href={navigationUrls.home}>
-        <button className="flex gap-2 text-on-primary bg-primary font-medium px-6 py-2 rounded-4xl cursor-pointer items-center">
-          <RxCross2 />
-          Close
-        </button>
-      </Link>
+
+      <button
+        className="flex gap-2 text-on-primary bg-primary font-medium px-6 py-2 rounded-4xl cursor-pointer items-center"
+        onClick={handleClose}
+      >
+        <RxCross2 />
+        Close
+      </button>
     </div>
   );
 }

@@ -7,34 +7,35 @@ import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
 
 type UseSpeechRecognitionOptions = {
   runOnMount?: boolean;
+  language?: string;
 };
 
 export const useSpeechRecognition = ({
   runOnMount,
+  language,
 }: UseSpeechRecognitionOptions) => {
   const speechToText = useBaseSpeechRecognition();
   const { resetTranscript, listening } = speechToText;
   const isSupported = SpeechRecognition.browserSupportsSpeechRecognition();
 
-  const start = useCallback(() => {
-    SpeechRecognition.startListening({ continuous: true });
+  const start = useCallback(async () => {
+    await SpeechRecognition.startListening({ continuous: true, language });
+  }, [language]);
+
+  const stop = useCallback(async () => {
+    await SpeechRecognition.stopListening();
   }, []);
 
-  const stop = useCallback(() => {
-    SpeechRecognition.stopListening();
-    SpeechRecognition.abortListening();
-  }, []);
-
-  const toggleListening = useCallback(() => {
+  const toggleListening = useCallback(async () => {
     if (listening) {
-      stop();
+      await stop();
       return;
     }
-    start();
+    await start();
   }, [listening, start, stop]);
 
-  const reset = useCallback(() => {
-    if (listening) stop();
+  const reset = useCallback(async () => {
+    if (listening) await stop();
     resetTranscript();
   }, [listening, resetTranscript, stop]);
 
