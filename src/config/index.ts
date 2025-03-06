@@ -23,3 +23,8 @@ export const languageOptions = [
     label: "Telugu",
   },
 ];
+
+export const avatarVideoUrls = {
+  baseUrl:
+    "https://public-content-dp.s3.us-east-2.amazonaws.com/Peri+Version+1+Cropped+2.mp4",
+};

@@ -6,12 +6,10 @@ import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
 
 type UseSpeechRecognitionOptions = {
-  runOnMount?: boolean;
   language?: string;
 };
 
 export const useSpeechRecognition = ({
-  runOnMount,
   language,
 }: UseSpeechRecognitionOptions) => {
   const speechToText = useBaseSpeechRecognition();
@@ -19,12 +17,15 @@ export const useSpeechRecognition = ({
   const isSupported = SpeechRecognition.browserSupportsSpeechRecognition();
 
   const start = useCallback(async () => {
-    await SpeechRecognition.startListening({ continuous: true, language });
-  }, [language]);
+    if (!listening) {
+      await SpeechRecognition.startListening({ continuous: true, language });
+    }
+  }, [language, listening]);
 
   const stop = useCallback(async () => {
+    if (!listening) return;
     await SpeechRecognition.stopListening();
-  }, []);
+  }, [listening]);
 
   const toggleListening = useCallback(async () => {
     if (listening) {
@@ -39,10 +40,6 @@ export const useSpeechRecognition = ({
     resetTranscript();
   }, [listening, resetTranscript, stop]);
 
-  useEffect(() => {
-    if (runOnMount) start();
-  }, [runOnMount, start]);
-
   return {
     isSupported,
     toggleListening,
@@ -53,19 +50,19 @@ export const useSpeechRecognition = ({
   };
 };
 
-type UseMicrophoneWaveformOptions = {
-  runOnMount?: boolean;
+type UseWaveformOptions = {
+  useMic?: boolean;
+  url?: string;
   waveColor?: string;
   progressColor?: string;
 };
 
-export const useMicrophoneWaveform = (
-  options: UseMicrophoneWaveformOptions = {}
-) => {
+export const useWaveform = (options: UseWaveformOptions = {}) => {
   const {
-    runOnMount,
-    waveColor = "#d7b36e",
+    useMic = true,
+    waveColor = options.useMic ? "#ede6d8" : "#d7b36e",
     progressColor = "#ede6d8",
+    url,
   } = options;
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
@@ -83,40 +80,46 @@ export const useMicrophoneWaveform = (
       interact: false,
       sampleRate: 3000,
     });
+    return () => {
+      wavesurferRef.current?.destroy();
+    };
+  }, [progressColor, waveColor]);
+
+  useEffect(() => {
+    if (!useMic) return;
     const recordPluginInstance = RecordPlugin.create({
       renderRecordedAudio: false,
       continuousWaveform: false,
     });
     recorderRef.current = recordPluginInstance;
-    wavesurferRef.current.registerPlugin(recordPluginInstance);
+    wavesurferRef.current?.registerPlugin(recordPluginInstance);
     return () => {
-      wavesurferRef.current?.destroy();
       recorderRef.current?.stopMic();
       recorderRef.current?.stopRecording();
       recorderRef.current?.destroy();
     };
-  }, [progressColor, waveColor]);
+  }, [useMic]);
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     if (recorderRef.current) {
-      recorderRef.current.startRecording();
+      await recorderRef.current.startRecording();
     }
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async () => {
     if (recorderRef.current) {
-      recorderRef.current.stopRecording();
+      await recorderRef.current.stopRecording();
     }
   }, []);
 
   useEffect(() => {
-    if (runOnMount) {
-      start();
+    try {
+      if (!url) return;
+      wavesurferRef.current?.load(url);
+    } catch (error) {
+      console.log(error);
     }
-    return () => {
-      stop();
-    };
-  }, [runOnMount, start, stop]);
+  }, [url]);
 
-  return { start, stop, waveformRef };
+  return { start, stop, waveformRef, wavesurferRef };
 };

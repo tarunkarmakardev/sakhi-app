@@ -47,15 +47,18 @@ export default function Page() {
         <div className="text-md lg:text-2xl font-medium mb-2 lg:mb-8">
           Feedback Summary
         </div>
-        {getQuery.isFetching && <div>Generating feedback...</div>}
-        <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
-          {Object.entries(categories).map(([title, description]) => (
-            <li key={title}>
-              <span className="font-medium">{title}</span>
-              <div className="text-xs lg:text-sm mt-4">{description}</div>
-            </li>
-          ))}
-        </ol>
+        {getQuery.isFetching ? (
+          <div>Generating feedback...</div>
+        ) : (
+          <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
+            {Object.entries(categories).map(([title, description]) => (
+              <li key={title}>
+                <span className="font-medium">{title}</span>
+                <div className="text-xs lg:text-sm mt-4">{description}</div>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
       <button

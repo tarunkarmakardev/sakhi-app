@@ -10,3 +10,10 @@
   --color-elevated: #2e2a24;
   --font-roboto: var(--font-roboto);
 }
+
+.sakhi-video {
+  video {
+    object-fit: cover;
+    border-radius: 100%;
+  }
+}
