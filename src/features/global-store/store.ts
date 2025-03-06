@@ -15,7 +15,7 @@ export type FeedbackStore = GlobalState & GlobalStateActions;
 
 export const defaultInitState: GlobalState = {
   feedback: "",
-  language: "en-US",
+  language: "te",
 };
 
 export const createGlobalStore = (

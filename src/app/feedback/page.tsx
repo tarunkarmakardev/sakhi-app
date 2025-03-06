@@ -53,14 +53,14 @@ export default function Page() {
         playbackTimings={videoConfig["FINISH"].playbackTimings}
       />
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
-        Thank you for your feedback!
+        మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>
       <div className="bg-elevated p-4 lg:p-8 w-full rounded-3xl">
         <div className="text-md lg:text-2xl font-medium mb-2 lg:mb-8">
-          Feedback Summary
+          అభిప్రాయ సారాంశం
         </div>
         {getQuery.isFetching ? (
-          <div>Generating feedback...</div>
+          <div>అభిప్రాయాన్ని రూపొందిస్తోంది...</div>
         ) : (
           <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
             {Object.entries(categories).map(([title, description]) => (
@@ -78,7 +78,7 @@ export default function Page() {
         onClick={handleClose}
       >
         <RxCross2 />
-        Close
+        మూసివేయి
       </button>
     </div>
   );
