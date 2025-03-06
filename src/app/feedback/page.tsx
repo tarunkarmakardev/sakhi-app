@@ -1,14 +1,21 @@
 "use client";
-import { apiEndpoints, navigationUrls } from "@/config";
+import {
+  apiEndpoints,
+  avatarVideoUrls,
+  navigationUrls,
+  videoConfig,
+} from "@/config";
 import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
-import { FaCheckCircle } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { FeedbackPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
+import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
+import { useState } from "react";
 
 export default function Page() {
+  const [playing, setPlaying] = useState(true);
   const router = useRouter();
   const text = useGlobalStore((s) => s.feedback);
   const language = useGlobalStore((s) => s.language);
@@ -37,9 +44,14 @@ export default function Page() {
 
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
-      <div className="text-xl lg:text-5xl">
-        <FaCheckCircle />
-      </div>
+      <SakhiVideoPlayer
+        playing={playing}
+        src={avatarVideoUrls.baseUrl}
+        onPlaybackEnded={() => {
+          setPlaying(false);
+        }}
+        playbackTimings={videoConfig["FINISH"].playbackTimings}
+      />
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         Thank you for your feedback!
       </div>

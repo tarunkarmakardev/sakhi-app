@@ -23,26 +23,28 @@ export default function SakhiVideoPlayer({
   const playerRef = useRef<ReactPlayerType>(null);
 
   return (
-    <ReactPlayer
-      ref={playerRef}
-      height="100%"
-      width="100%"
-      muted={false}
-      playsinline
-      playing={playing}
-      url={src}
-      onProgress={(e) => {
-        const playedSeconds = Math.floor(e.playedSeconds);
-        if (!playbackTimings) return;
-        const { start, end } = playbackTimings;
-        if (playedSeconds === end) {
-          onPlaybackEnded?.();
-          return;
-        }
-        if (playedSeconds >= end || playedSeconds < start) {
-          playerRef.current?.seekTo(start);
-        }
-      }}
-    />
+    <div className="sakhi-video h-[max(calc(100vh-600px),200px)] w-[max(calc(100vh-600px),200px)] border-2 border-primary rounded-full">
+      <ReactPlayer
+        ref={playerRef}
+        height="100%"
+        width="100%"
+        muted={false}
+        playsinline
+        playing={playing}
+        url={src}
+        onProgress={(e) => {
+          const playedSeconds = Math.floor(e.playedSeconds);
+          if (!playbackTimings) return;
+          const { start, end } = playbackTimings;
+          if (playedSeconds === end) {
+            onPlaybackEnded?.();
+            return;
+          }
+          if (playedSeconds >= end || playedSeconds < start) {
+            playerRef.current?.seekTo(start);
+          }
+        }}
+      />
+    </div>
   );
 }
