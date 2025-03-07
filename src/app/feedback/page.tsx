@@ -13,6 +13,7 @@ import { FeedbackPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
 import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
 import { useState } from "react";
+import Loader from "@/features/loader";
 
 export default function Page() {
   const [playing, setPlaying] = useState(true);
@@ -60,7 +61,9 @@ export default function Page() {
           అభిప్రాయ సారాంశం
         </div>
         {getQuery.isFetching ? (
-          <div>అభిప్రాయాన్ని రూపొందిస్తోంది...</div>
+          <div className="flex flex-col gap-2 w-full h-full min-h-[200px] items-center justify-center">
+            <Loader /> అభిప్రాయాన్ని రూపొందిస్తోంది...
+          </div>
         ) : (
           <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
             {Object.entries(categories).map(([title, description]) => (

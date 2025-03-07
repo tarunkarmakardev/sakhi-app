@@ -26,11 +26,11 @@ export const languageOptions = [
 
 export const avatarVideoUrls = {
   baseUrl:
-    "https://public-content-dp.s3.us-east-2.amazonaws.com/Final_Peri_V1_Cropped.mp4",
+    "https://public-content-dp.s3.us-east-2.amazonaws.com/Profession_heygen_V2.mp4",
 };
 
 export const videoConfig = {
-  START: { playbackTimings: { start: 0, end: 15 } },
-  LISTEN: { playbackTimings: { start: 17, end: 18 } },
-  FINISH: { playbackTimings: { start: 22, end: 31 } },
+  START: { playbackTimings: { start: 0, end: 25 } },
+  LISTEN: { playbackTimings: { start: 25, end: 29 } },
+  FINISH: { playbackTimings: { start: 31, end: 44 } },
 };

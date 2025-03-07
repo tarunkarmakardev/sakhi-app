@@ -23,7 +23,7 @@ export default function SakhiVideoPlayer({
   const playerRef = useRef<ReactPlayerType>(null);
 
   return (
-    <div className="sakhi-video h-[max(calc(100vh-600px),200px)] w-[max(calc(100vh-600px),200px)] border-2 border-primary rounded-full">
+    <div className="sakhi-video h-[280px] aspect-video border-2 border-primary rounded-md">
       <ReactPlayer
         ref={playerRef}
         height="100%"
@@ -32,6 +32,13 @@ export default function SakhiVideoPlayer({
         playsinline
         playing={playing}
         url={src}
+        onStart={() => {
+          if (!playbackTimings) return;
+          const { start } = playbackTimings;
+          if (start > 0) {
+            playerRef.current?.seekTo(start);
+          }
+        }}
         onProgress={(e) => {
           const playedSeconds = Math.floor(e.playedSeconds);
           if (!playbackTimings) return;
