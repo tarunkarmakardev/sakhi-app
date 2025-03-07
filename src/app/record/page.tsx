@@ -18,6 +18,7 @@ const steps = ["START", "LISTEN", "FINISH"];
 
 export default function Page() {
   const [step, setStep] = useState<FeedbackStepType>("START");
+  const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
   const router = useRouter();
   const language = useGlobalStore((s) => s.language);
@@ -43,8 +44,8 @@ export default function Page() {
   };
 
   return (
-    <div className="grid h-[calc(100vh-160px)] grid-rows-[auto_120px_1fr_auto] w-full">
-      <div className="justify-self-center">
+    <div className="grid h-[calc(100vh-180px)] grid-rows-[minmax(200px,500px)_120px_100px_44px] w-full">
+      <div className="justify-self-center h-auto aspect-video">
         <SakhiVideoPlayer
           playing={playing}
           src={avatarVideoUrls.baseUrl}
@@ -59,25 +60,35 @@ export default function Page() {
         />
       </div>
       <div>
-        <div ref={waveformRef} className="h-[128px]" />
+        {started ? (
+          <div ref={waveformRef} className="h-[128px]" />
+        ) : (
+          <StartButton
+            onStart={() => {
+              setPlaying(true);
+              setStarted(true);
+            }}
+          />
+        )}
       </div>
       <div>
         <SpeechBox transcript={transcript} listening={listening} />
       </div>
-      <div>
-        <Actions
-          transcript={transcript}
-          onCancel={async () => {
-            await handleStop();
-            router.push(navigationUrls.home);
-          }}
-          onSubmit={async () => {
-            await handleStop();
-            setStep("FINISH");
-            router.push(navigationUrls.feedback);
-          }}
-          onStart={() => setPlaying(true)}
-        />
+      <div className="mt-auto">
+        {started ? (
+          <Actions
+            transcript={transcript}
+            onCancel={async () => {
+              await handleStop();
+              router.push(navigationUrls.home);
+            }}
+            onSubmit={async () => {
+              await handleStop();
+              setStep("FINISH");
+              router.push(navigationUrls.feedback);
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -107,10 +118,9 @@ type ActionProps = {
   transcript: string;
   onCancel: () => Promise<void>;
   onSubmit: () => void;
-  onStart?: () => void;
 };
 
-function Actions({ transcript, onCancel, onSubmit, onStart }: ActionProps) {
+function Actions({ transcript, onCancel, onSubmit }: ActionProps) {
   const setFeedback = useGlobalStore((s) => s.setFeedback);
 
   const handleCancel = async () => {
@@ -133,13 +143,6 @@ function Actions({ transcript, onCancel, onSubmit, onStart }: ActionProps) {
         రద్దు చేయి
       </button>
       <div className="flex gap-2 items-center">
-        <div
-          className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-4xl w-max cursor-pointer"
-          onClick={onStart}
-        >
-          <FaPlay />
-          ప్రారంభించండి
-        </div>
         <button
           onClick={handleSubmit}
           className="flex gap-2 text-on-primary bg-primary font-medium px-6 py-2 rounded-4xl cursor-pointer items-center"
@@ -148,6 +151,24 @@ function Actions({ transcript, onCancel, onSubmit, onStart }: ActionProps) {
           <RxCheck />
           సమర్పించండి
         </button>
+      </div>
+    </div>
+  );
+}
+
+type StartButtonProps = {
+  onStart: () => void;
+};
+
+function StartButton({ onStart }: StartButtonProps) {
+  return (
+    <div className="flex h-full w-full items-center justify-center">
+      <div
+        className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-4xl w-max cursor-pointer"
+        onClick={onStart}
+      >
+        <FaPlay />
+        ప్రారంభించండి
       </div>
     </div>
   );

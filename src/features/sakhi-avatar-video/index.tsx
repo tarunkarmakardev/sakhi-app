@@ -23,7 +23,7 @@ export default function SakhiVideoPlayer({
   const playerRef = useRef<ReactPlayerType>(null);
 
   return (
-    <div className="sakhi-video h-[280px] aspect-video border-2 border-primary rounded-md">
+    <div className="sakhi-video h-auto aspect-video border-2 border-primary rounded-md">
       <ReactPlayer
         ref={playerRef}
         height="100%"

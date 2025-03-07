@@ -32,5 +32,5 @@ export const avatarVideoUrls = {
 export const videoConfig = {
   START: { playbackTimings: { start: 0, end: 25 } },
   LISTEN: { playbackTimings: { start: 25, end: 29 } },
-  FINISH: { playbackTimings: { start: 31, end: 44 } },
+  FINISH: { playbackTimings: { start: 31, end: 46 } },
 };

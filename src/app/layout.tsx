@@ -28,7 +28,7 @@ export default function RootLayout({
         <Providers>
           <main className="bg-background h-screen w-screen overflow-auto p-4">
             <Header />
-            <div className="max-w-2xl lg:max-w-5xl mx-auto mt-[min(10vh,30rem)]">
+            <div className="max-w-2xl lg:max-w-5xl mx-auto mt-16">
               {children}
             </div>
           </main>
