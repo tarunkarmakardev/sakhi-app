@@ -9,10 +9,9 @@ export const FeedbackPostData = z.object({
 });
 
 export const FeedbackAudioPostPayload = z.object({
-  audio: z.instanceof(Blob), // Ensures it's a Blob (audio file)
+  audio: z.instanceof(Blob).nullable(), // Allows `Blob` or `null`
   language: z.string(),
 });
-
 export type FeedbackAudioPostPayload = z.infer<typeof FeedbackAudioPostPayload>;
 export type FeedbackPostPayload = z.infer<typeof FeedbackPostPayload>;
 export type FeedbackPostData = z.infer<typeof FeedbackPostData>;

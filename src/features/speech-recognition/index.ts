@@ -10,9 +10,7 @@ type UseSpeechRecognitionOptions = {
   language?: string;
 };
 
-export const useSpeechRecognition = ({
-  language,
-}: UseSpeechRecognitionOptions) => {
+export const useSpeechRecognition = ({ language }: UseSpeechRecognitionOptions) => {
   const speechToText = useBaseSpeechRecognition();
   const { resetTranscript, listening } = speechToText;
   const isSupported = SpeechRecognition.browserSupportsSpeechRecognition();
@@ -68,8 +66,8 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const recorderRef = useRef<RecordPlugin | null>(null);
-  // Use global store to manage audioBlob
   const setAudioBlob = useGlobalStore((s) => s.setAudioBlob);
+
   useEffect(() => {
     if (!waveformRef.current) return;
     wavesurferRef.current = WaveSurfer.create({
@@ -82,6 +80,7 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
       interact: false,
       sampleRate: 3000,
     });
+
     return () => {
       wavesurferRef.current?.destroy();
     };
@@ -95,19 +94,28 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
     });
     recorderRef.current = recordPluginInstance;
     wavesurferRef.current?.registerPlugin(recordPluginInstance);
-    
-    // Listen for record end event
-    recorderRef.current.on("record-end", (blob: Blob) => {
-      console.log("Audio recorded:", blob);
-      setAudioBlob(blob); // Save the audio Blob globally
-    });
 
     return () => {
       recorderRef.current?.stopMic();
       recorderRef.current?.stopRecording();
       recorderRef.current?.destroy();
     };
-  }, [useMic,setAudioBlob]);
+  }, [useMic]);
+
+  useEffect(() => {
+    if (!recorderRef.current) return;
+    // Listen for record-end event
+    const onRecordEnd = (blob: Blob) => {
+      console.log("Audio recorded:", blob);
+      setAudioBlob(blob); // Save the audio Blob globally
+    };
+
+    recorderRef.current.on("record-end", onRecordEnd);
+
+    return () => {
+      recorderRef.current?.un("record-end", onRecordEnd); // Cleanup event listener
+    };
+  }, [setAudioBlob]);
 
   const start = useCallback(async () => {
     if (recorderRef.current) {
