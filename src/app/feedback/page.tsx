@@ -41,6 +41,8 @@ export default function Page() {
       return api.post(apiEndpoints.audioFeedback, formData);
     },
     retry: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   });
 
   const { categories = {} } = (getQuery.data?.data || {}) as {
