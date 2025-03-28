@@ -6,7 +6,7 @@ export const navigationUrls = {
 
 export const apiEndpoints = {
   feedback: "/feedback",
-  audioFeedback:"/audio/feedback"
+  audioFeedback: "/audio/feedback",
 };
 
 const LANGUAGES = {

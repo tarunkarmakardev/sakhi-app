@@ -10,7 +10,9 @@ type UseSpeechRecognitionOptions = {
   language?: string;
 };
 
-export const useSpeechRecognition = ({ language }: UseSpeechRecognitionOptions) => {
+export const useSpeechRecognition = ({
+  language,
+}: UseSpeechRecognitionOptions) => {
   const speechToText = useBaseSpeechRecognition();
   const { resetTranscript, listening } = speechToText;
   const isSupported = SpeechRecognition.browserSupportsSpeechRecognition();
@@ -104,14 +106,10 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
 
   useEffect(() => {
     if (!recorderRef.current) return;
-    // Listen for record-end event
     const onRecordEnd = (blob: Blob) => {
-      console.log("Audio recorded:", blob);
-      setAudioBlob(blob); // Save the audio Blob globally
+      setAudioBlob(blob);
     };
-
     recorderRef.current.on("record-end", onRecordEnd);
-
     return () => {
       recorderRef.current?.un("record-end", onRecordEnd); // Cleanup event listener
     };

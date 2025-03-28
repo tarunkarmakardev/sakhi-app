@@ -77,7 +77,7 @@ export default function Page() {
       <div className="mt-auto">
         {started ? (
           <Actions
-            transcript={transcript} 
+            transcript={transcript}
             onCancel={async () => {
               await handleStop();
               router.push(navigationUrls.home);
@@ -130,7 +130,7 @@ function Actions({ transcript, onCancel, onSubmit }: ActionProps) {
 
   const handleSubmit = async () => {
     setFeedback(transcript);
-      onSubmit();
+    onSubmit();
   };
 
   return (

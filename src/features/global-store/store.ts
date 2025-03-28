@@ -22,7 +22,7 @@ export const defaultInitState: GlobalState = {
 };
 
 export const createGlobalStore = (
-  initState: GlobalState = defaultInitState
+  initState: GlobalState = defaultInitState,
 ) => {
   return createStore<FeedbackStore>()((set) => ({
     ...initState,

@@ -11,7 +11,7 @@ export default function SakhiAvatar({ containerProps }: SakhiAvatarProps) {
       {...containerProps}
       className={cn(
         "shrink-0 h-[200px] w-[200px] lg:h-[400px] lg:w-[400px]",
-        containerProps?.className
+        containerProps?.className,
       )}
     >
       <Image

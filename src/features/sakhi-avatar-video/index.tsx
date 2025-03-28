@@ -51,6 +51,13 @@ export default function SakhiVideoPlayer({
             playerRef.current?.seekTo(start);
           }
         }}
+        config={{
+          file: {
+            attributes: {
+              preload: "auto",
+            },
+          },
+        }}
       />
     </div>
   );
