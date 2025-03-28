@@ -28,7 +28,7 @@ export const GlobalStoreProvider = ({ children }: GlobalStoreProviderProps) => {
 GlobalStoreContext.displayName = "GlobalStoreProvider";
 
 export const useGlobalStore = <T,>(
-  selector: (store: FeedbackStore) => T
+  selector: (store: FeedbackStore) => T,
 ): T => {
   const counterStoreContext = useContextOrError(GlobalStoreContext);
   return useStore(counterStoreContext, selector);

@@ -4,6 +4,7 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
+import { useGlobalStore } from "../global-store/context";
 
 type UseSpeechRecognitionOptions = {
   language?: string;
@@ -67,6 +68,7 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const recorderRef = useRef<RecordPlugin | null>(null);
+  const setAudioBlob = useGlobalStore((s) => s.setAudioBlob);
 
   useEffect(() => {
     if (!waveformRef.current) return;
@@ -80,6 +82,7 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
       interact: false,
       sampleRate: 3000,
     });
+
     return () => {
       wavesurferRef.current?.destroy();
     };
@@ -93,12 +96,24 @@ export const useWaveform = (options: UseWaveformOptions = {}) => {
     });
     recorderRef.current = recordPluginInstance;
     wavesurferRef.current?.registerPlugin(recordPluginInstance);
+
     return () => {
       recorderRef.current?.stopMic();
       recorderRef.current?.stopRecording();
       recorderRef.current?.destroy();
     };
   }, [useMic]);
+
+  useEffect(() => {
+    if (!recorderRef.current) return;
+    const onRecordEnd = (blob: Blob) => {
+      setAudioBlob(blob);
+    };
+    recorderRef.current.on("record-end", onRecordEnd);
+    return () => {
+      recorderRef.current?.un("record-end", onRecordEnd); // Cleanup event listener
+    };
+  }, [setAudioBlob]);
 
   const start = useCallback(async () => {
     if (recorderRef.current) {

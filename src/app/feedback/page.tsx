@@ -9,7 +9,7 @@ import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { RxCross2 } from "react-icons/rx";
-import { FeedbackPostPayload } from "@/schemas/feedback";
+import { FeedbackAudioPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
 import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
 import { useState } from "react";
@@ -18,11 +18,11 @@ import Loader from "@/features/loader";
 export default function Page() {
   const [playing, setPlaying] = useState(true);
   const router = useRouter();
-  const text = useGlobalStore((s) => s.feedback);
   const language = useGlobalStore((s) => s.language);
+  const audioBlob = useGlobalStore((s) => s.audioBlob);
   const setFeedback = useGlobalStore((s) => s.setFeedback);
-  const payload: FeedbackPostPayload = {
-    text,
+  const payload: FeedbackAudioPostPayload = {
+    audio: audioBlob,
     language,
   };
 
@@ -32,11 +32,15 @@ export default function Page() {
   };
 
   const getQuery = useQuery({
-    queryKey: [apiEndpoints.feedback, payload],
+    queryKey: [apiEndpoints.audioFeedback, payload],
     queryFn: () => {
-      return api.post(apiEndpoints.feedback, payload);
+      const formData = new FormData();
+      if (!payload.audio) return;
+      formData.append("audio", payload.audio, "feedback_audio.webm");
+      formData.append("language", payload.language);
+      return api.post(apiEndpoints.audioFeedback, formData);
     },
-    enabled: !!payload.text,
+    retry: false,
   });
 
   const { categories = {} } = (getQuery.data?.data || {}) as {
