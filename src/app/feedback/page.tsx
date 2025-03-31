@@ -1,15 +1,13 @@
 "use client";
-import {
-  apiEndpoints,
-  avatarVideoUrls,
-  navigationUrls,
-  videoConfig,
-} from "@/config";
+import { apiEndpoints, navigationUrls } from "@/config";
 import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { RxCross2 } from "react-icons/rx";
-import { FeedbackAudioPostPayload } from "@/schemas/feedback";
+import {
+  FeedbackPostDataSchema,
+  FeedbackPostPayload,
+} from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
 import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
 import { useState } from "react";
@@ -21,7 +19,7 @@ export default function Page() {
   const language = useGlobalStore((s) => s.language);
   const audioBlob = useGlobalStore((s) => s.audioBlob);
   const setFeedback = useGlobalStore((s) => s.setFeedback);
-  const payload: FeedbackAudioPostPayload = {
+  const payload: FeedbackPostPayload = {
     audio: audioBlob,
     language,
   };
@@ -33,32 +31,32 @@ export default function Page() {
 
   const getQuery = useQuery({
     queryKey: [apiEndpoints.audioFeedback, payload],
-    queryFn: () => {
+    queryFn: async () => {
       const formData = new FormData();
       if (!payload.audio) return;
       formData.append("audio", payload.audio, "feedback_audio.webm");
       formData.append("language", payload.language);
-      return api.post(apiEndpoints.audioFeedback, formData);
+      const res = await api.post(apiEndpoints.audioFeedback, formData);
+      return FeedbackPostDataSchema.parse(res.data);
     },
     retry: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });
 
-  const { categories = {} } = (getQuery.data?.data || {}) as {
-    categories: Record<string, string>;
-  };
+  const { categories = {}, videoUrl } = getQuery.data || {};
 
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
-      <SakhiVideoPlayer
-        playing={playing}
-        src={avatarVideoUrls.baseUrl}
-        onPlaybackEnded={() => {
-          setPlaying(false);
-        }}
-        playbackTimings={videoConfig["FINISH"].playbackTimings}
-      />
+      {videoUrl && (
+        <SakhiVideoPlayer
+          playing={playing}
+          src={videoUrl}
+          onPlaybackEnded={() => {
+            setPlaying(false);
+          }}
+        />
+      )}
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>

@@ -1,17 +1,13 @@
 import { z } from "zod";
 
-export const FeedbackPostPayload = z.object({
-  text: z.string(),
-  language: z.string(),
-});
-export const FeedbackPostData = z.object({
-  categories: z.record(z.string()),
-});
-
-export const FeedbackAudioPostPayload = z.object({
+export const FeedbackPostPayloadSchema = z.object({
   audio: z.instanceof(Blob).nullable(), // Allows `Blob` or `null`
   language: z.string(),
 });
-export type FeedbackAudioPostPayload = z.infer<typeof FeedbackAudioPostPayload>;
-export type FeedbackPostPayload = z.infer<typeof FeedbackPostPayload>;
-export type FeedbackPostData = z.infer<typeof FeedbackPostData>;
+export const FeedbackPostDataSchema = z.object({
+  categories: z.record(z.string()),
+  videoUrl: z.string(),
+});
+
+export type FeedbackPostPayload = z.infer<typeof FeedbackPostPayloadSchema>;
+export type FeedbackPostData = z.infer<typeof FeedbackPostDataSchema>;
