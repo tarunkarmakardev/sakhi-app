@@ -5,7 +5,14 @@ export const FeedbackPostPayloadSchema = z.object({
   language: z.string(),
 });
 export const FeedbackPostDataSchema = z.object({
-  categories: z.record(z.string()),
+  categories: z.object({
+    generalFeedback: z.record(z.string()),
+    personalFeedback: z.record(z.string()),
+  }),
+  criticalComplaints: z.object({
+    criticalTypes: z.array(z.string()),
+    alertTrigger: z.boolean(),
+  }),
   videoUrl: z.string(),
 });
 

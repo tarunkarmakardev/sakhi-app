@@ -4,10 +4,8 @@ import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { RxCross2 } from "react-icons/rx";
-import {
-  FeedbackPostDataSchema,
-  FeedbackPostPayload,
-} from "@/schemas/feedback";
+import { GoAlertFill } from "react-icons/go";
+import { FeedbackPostData, FeedbackPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
 import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
 import { useState } from "react";
@@ -37,14 +35,25 @@ export default function Page() {
       formData.append("audio", payload.audio, "feedback_audio.webm");
       formData.append("language", payload.language);
       const res = await api.post(apiEndpoints.audioFeedback, formData);
-      return FeedbackPostDataSchema.parse(res.data);
+      return {
+        categories: res.data.categories,
+        videoUrl: res.data.video_url,
+        criticalComplaints: {
+          alertTrigger: res.data.critical_complaints.alert_trigger,
+          criticalTypes: res.data.critical_complaints.critical_types,
+        },
+      } as FeedbackPostData;
     },
     retry: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   });
 
-  const { categories = {}, videoUrl } = getQuery.data || {};
+  const { videoUrl } = getQuery.data || {};
+  const { generalFeedback = {}, personalFeedback = {} } =
+    getQuery.data?.categories || {};
+  const { alertTrigger = false, criticalTypes } =
+    getQuery.data?.criticalComplaints || {};
 
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
@@ -60,23 +69,29 @@ export default function Page() {
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>
+      {alertTrigger && (
+        <Alert
+          text={`This form has been flagged for ${criticalTypes?.join(
+            ", "
+          )} reasons.`}
+        />
+      )}
       <div className="bg-elevated p-4 lg:p-8 w-full rounded-3xl">
         <div className="text-md lg:text-2xl font-medium mb-2 lg:mb-8">
-          అభిప్రాయ సారాంశం
+          సారాంశం
         </div>
         {getQuery.isFetching ? (
           <div className="flex flex-col gap-2 w-full h-full min-h-[200px] items-center justify-center">
             <Loader /> అభిప్రాయాన్ని రూపొందిస్తోంది...
           </div>
         ) : (
-          <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
-            {Object.entries(categories).map(([title, description]) => (
-              <li key={title}>
-                <span className="font-medium">{title}</span>
-                <div className="text-xs lg:text-sm mt-4">{description}</div>
-              </li>
-            ))}
-          </ol>
+          <>
+            <FeedbackPoints title="అభిప్రాయం" feedback={generalFeedback} />
+            <FeedbackPoints
+              title="వ్యక్తిగత సమస్యలు"
+              feedback={personalFeedback}
+            />
+          </>
         )}
       </div>
 
@@ -87,6 +102,40 @@ export default function Page() {
         <RxCross2 />
         మూసివేయి
       </button>
+    </div>
+  );
+}
+
+type FeedbackPointsProps = {
+  title: string;
+  feedback: Record<string, string>;
+};
+
+function FeedbackPoints({ title, feedback }: FeedbackPointsProps) {
+  return (
+    <>
+      <div className="text-md lg:text-xl font-medium mb-2 lg:mb-8">{title}</div>
+      <ol className="flex text-sm lg:text-base flex-col gap-4 lg:gap-6 list-decimal list-inside text-primary-text">
+        {Object.entries(feedback).map(([title, description]) => (
+          <li key={title}>
+            <span className="font-medium">{title}</span>
+            <div className="text-xs lg:text-sm mt-4">{description}</div>
+          </li>
+        ))}
+      </ol>
+    </>
+  );
+}
+
+type AlertProps = {
+  text: string;
+};
+
+function Alert({ text }: AlertProps) {
+  return (
+    <div className="bg-primary text-black flex gap-2 items-center p-2 rounded-md">
+      <GoAlertFill />
+      {text}
     </div>
   );
 }
