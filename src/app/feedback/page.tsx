@@ -36,7 +36,10 @@ export default function Page() {
       formData.append("language", payload.language);
       const res = await api.post(apiEndpoints.audioFeedback, formData);
       return {
-        categories: res.data.categories,
+        categories: {
+          generalFeedback: res.data.categories.general_feedback,
+          personalFeedback: res.data.categories.personal_feedback,
+        },
         videoUrl: res.data.video_url,
         criticalComplaints: {
           alertTrigger: res.data.critical_complaints.alert_trigger,
