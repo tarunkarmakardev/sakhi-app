@@ -72,7 +72,7 @@ export default function Page() {
       {alertTrigger && (
         <Alert
           text={`This form has been flagged for ${criticalTypes?.join(
-            ", "
+            ", ",
           )} reasons.`}
         />
       )}

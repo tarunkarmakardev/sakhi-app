@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
@@ -16,7 +15,7 @@ const eslintConfig = [
     "next/core-web-vitals",
     "next/typescript",
     "plugin:react/recommended",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
   ),
   {
     files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
