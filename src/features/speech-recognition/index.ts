@@ -79,7 +79,10 @@ export const useMicWaveform = (options: UseMicWaveformOptions) => {
     try {
       if (!waveformRef.current) return;
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: {
+          noiseSuppression: true,
+          echoCancellation: true,
+        },
         video: false,
       });
       mediaStreamSourceRef.current =
