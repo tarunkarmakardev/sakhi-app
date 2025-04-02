@@ -65,6 +65,7 @@ export default function Page() {
           }}
         />
         <audio
+          crossOrigin="anonymous"
           ref={audioRef}
           src={audioUrls.start}
           controls={false}
