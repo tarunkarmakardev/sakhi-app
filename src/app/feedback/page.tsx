@@ -7,12 +7,14 @@ import { RxCross2 } from "react-icons/rx";
 import { GoAlertFill } from "react-icons/go";
 import { FeedbackPostData, FeedbackPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
-import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Loader from "@/features/loader";
+import { cn } from "@/lib/classnames";
+import SakhiAvatar from "@/features/sakhi-avatar";
 
 export default function Page() {
-  const [playing, setPlaying] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
   const router = useRouter();
   const language = useGlobalStore((s) => s.language);
   const audioBlob = useGlobalStore((s) => s.audioBlob);
@@ -40,7 +42,7 @@ export default function Page() {
           generalFeedback: res.data.categories.general_feedback,
           personalFeedback: res.data.categories.personal_feedback,
         },
-        videoUrl: res.data.video_url,
+        audioUrl: res.data.audio_url,
         criticalComplaints: {
           alertTrigger: res.data.critical_complaints.alert_trigger,
           criticalTypes: res.data.critical_complaints.critical_types,
@@ -52,23 +54,25 @@ export default function Page() {
     refetchOnWindowFocus: false,
   });
 
-  const { videoUrl } = getQuery.data || {};
+  const { audioUrl } = getQuery.data || {};
   const { generalFeedback = {}, personalFeedback = {} } =
     getQuery.data?.categories || {};
   const { alertTrigger = false, criticalTypes } =
     getQuery.data?.criticalComplaints || {};
 
+  useEffect(() => {
+    setPlaying(true);
+    audioRef.current?.play();
+  }, [audioUrl]);
+
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
-      {videoUrl && (
-        <SakhiVideoPlayer
-          playing={playing}
-          src={videoUrl}
-          onPlaybackEnded={() => {
-            setPlaying(false);
-          }}
-        />
-      )}
+      <SakhiAvatar
+        containerProps={{
+          className: cn("h-[150px]", { "animate-audio-bot": playing }),
+        }}
+      />
+      <audio ref={audioRef} src={audioUrl} controls={false} />
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>

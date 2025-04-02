@@ -13,7 +13,7 @@ export const FeedbackPostDataSchema = z.object({
     criticalTypes: z.array(z.string()),
     alertTrigger: z.boolean(),
   }),
-  videoUrl: z.string(),
+  audioUrl: z.string(),
 });
 
 export type FeedbackPostPayload = z.infer<typeof FeedbackPostPayloadSchema>;

@@ -9,6 +9,17 @@
   --color-outline: #8c7a5f;
   --color-elevated: #2e2a24;
   --font-roboto: var(--font-roboto);
+
+  --animate-audio-bot: audio-bot 2s ease-out infinite;
+  @keyframes audio-bot {
+    0%,
+    100% {
+      transform: scale(0.95);
+    }
+    50% {
+      transform: scale(1);
+    }
+  }
 }
 
 .sakhi-video {

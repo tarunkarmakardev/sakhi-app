@@ -10,7 +10,7 @@ export default function SakhiAvatar({ containerProps }: SakhiAvatarProps) {
     <div
       {...containerProps}
       className={cn(
-        "shrink-0 h-[200px] w-[200px] lg:h-[400px] lg:w-[400px]",
+        "shrink-0 aspect-square border-primary border-2 rounded-full",
         containerProps?.className,
       )}
     >

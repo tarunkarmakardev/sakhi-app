@@ -1,32 +1,36 @@
 "use client";
 import "regenerator-runtime/runtime";
 import {
-  useWaveform,
+  useMediaWaveform,
+  useMicWaveform,
   useSpeechRecognition,
 } from "@/features/speech-recognition";
 import { RxCross2, RxCheck } from "react-icons/rx";
-import { avatarVideoUrls, navigationUrls, videoConfig } from "@/config";
+import { audioUrls, navigationUrls } from "@/config";
 import { useGlobalStore } from "@/features/global-store/context";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import SakhiVideoPlayer from "@/features/sakhi-avatar-video";
+import { useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa";
+import SakhiAvatar from "@/features/sakhi-avatar";
+import { cn } from "@/lib/classnames";
 
-export type FeedbackStepType = "START" | "LISTEN" | "FINISH";
-
-const steps = ["START", "LISTEN", "FINISH"];
+export type FeedbackStepType = "START" | "LISTEN";
 
 export default function Page() {
-  const [step, setStep] = useState<FeedbackStepType>("START");
-  const [started, setStarted] = useState(false);
-  const [playing, setPlaying] = useState(false);
   const router = useRouter();
   const language = useGlobalStore((s) => s.language);
-  const {
-    waveformRef,
-    start: startListeningWaveform,
-    stop: stopWaveform,
-  } = useWaveform();
+  const setAudioBlob = useGlobalStore((s) => s.setAudioBlob);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [step, setStep] = useState<FeedbackStepType | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const micWaveform = useMicWaveform({
+    onRecordEnd: (data) => {
+      setAudioBlob(data);
+    },
+  });
+  const audioWaveform = useMediaWaveform({
+    source: audioRef.current,
+  });
   const {
     listening,
     transcript,
@@ -35,47 +39,62 @@ export default function Page() {
   } = useSpeechRecognition({
     language,
   });
-  const nextStep = steps[steps.indexOf(step) + 1] as FeedbackStepType;
+
+  const handleStart = async () => {
+    if (audioRef.current) {
+      await audioRef.current.play();
+      audioRef.current.volume = 1;
+    }
+
+    setStep("START");
+    setPlaying(true);
+  };
 
   const handleStop = async () => {
     await stopListening();
-    await stopWaveform();
+    await micWaveform.stop();
     setPlaying(false);
   };
 
   return (
     <div className="grid h-[calc(100vh-180px)] grid-rows-[minmax(200px,500px)_120px_100px_44px] w-full">
-      <div className="justify-self-center h-auto aspect-video">
-        <SakhiVideoPlayer
-          playing={playing}
-          src={avatarVideoUrls.baseUrl}
-          onPlaybackEnded={async () => {
-            if (nextStep === "LISTEN") {
-              setStep("LISTEN");
-              await startListening();
-              await startListeningWaveform();
-            }
+      <div className="place-self-center h-[150px]">
+        <SakhiAvatar
+          containerProps={{
+            className: cn("h-[150px]", { "animate-audio-bot": playing }),
           }}
-          playbackTimings={videoConfig[step].playbackTimings}
+        />
+        <audio
+          ref={audioRef}
+          src={audioUrls.start}
+          controls={false}
+          preload="auto"
+          onEnded={() => {
+            setPlaying(false);
+            setStep("LISTEN");
+            startListening();
+            micWaveform.start();
+          }}
         />
       </div>
       <div>
-        {started ? (
-          <div ref={waveformRef} className="h-[128px]" />
-        ) : (
-          <StartButton
-            onStart={() => {
-              setPlaying(true);
-              setStarted(true);
-            }}
-          />
-        )}
+        <div
+          ref={micWaveform.targetRef}
+          className={cn("h-[128px]", { hidden: step !== "LISTEN" })}
+        />
+        <div
+          ref={audioWaveform.targetRef}
+          className={cn("h-[128px]", {
+            hidden: step !== "START",
+          })}
+        />
+        {step === null && <StartButton onStart={handleStart} />}
       </div>
       <div>
         <SpeechBox transcript={transcript} listening={listening} />
       </div>
       <div className="mt-auto">
-        {started ? (
+        {step === "LISTEN" ? (
           <Actions
             transcript={transcript}
             onCancel={async () => {
@@ -84,7 +103,6 @@ export default function Page() {
             }}
             onSubmit={async () => {
               await handleStop();
-              setStep("FINISH");
               router.push(navigationUrls.feedback);
             }}
           />

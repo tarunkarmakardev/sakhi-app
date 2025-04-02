@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef } from "react";
 import SpeechRecognition, {
   useSpeechRecognition as useBaseSpeechRecognition,
 } from "react-speech-recognition";
-import WaveSurfer from "wavesurfer.js";
-import RecordPlugin from "wavesurfer.js/dist/plugins/record.js";
-import { useGlobalStore } from "../global-store/context";
+import AudioMotionAnalyzer, {
+  ConstructorOptions as AudioMotionOptions,
+} from "audiomotion-analyzer";
 
 type UseSpeechRecognitionOptions = {
   language?: string;
@@ -51,90 +51,129 @@ export const useSpeechRecognition = ({
   };
 };
 
-type UseWaveformOptions = {
-  useMic?: boolean;
-  url?: string;
+type UseMicWaveformOptions = {
   waveColor?: string;
-  progressColor?: string;
+  onRecordEnd: (data: Blob) => void;
 };
 
-export const useWaveform = (options: UseWaveformOptions = {}) => {
-  const {
-    useMic = true,
-    waveColor = options.useMic ? "#ede6d8" : "#d7b36e",
-    progressColor = "#ede6d8",
-    url,
-  } = options;
-  const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
-  const recorderRef = useRef<RecordPlugin | null>(null);
-  const setAudioBlob = useGlobalStore((s) => s.setAudioBlob);
+export const useMicWaveform = (options: UseMicWaveformOptions) => {
+  const { waveColor = "#e6ba64", onRecordEnd } = options;
+  const targetRef = useRef<HTMLDivElement>(null);
+  const waveformRef = useRef<AudioMotionAnalyzer | null>(null);
+  const mediaStreamSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<Blob[] | null>([]);
 
   useEffect(() => {
-    if (!waveformRef.current) return;
-    wavesurferRef.current = WaveSurfer.create({
-      container: waveformRef.current,
+    if (!targetRef.current) return;
+    waveformRef.current = createAudioMotionAnalyzer(targetRef.current, {
+      ...audioMotionDefaultOptions,
       waveColor,
-      progressColor,
-      backend: "WebAudio",
-      cursorWidth: 0,
-      fillParent: true,
-      interact: false,
-      sampleRate: 3000,
     });
-
     return () => {
-      wavesurferRef.current?.destroy();
+      waveformRef.current?.destroy();
     };
-  }, [progressColor, waveColor]);
-
-  useEffect(() => {
-    if (!useMic) return;
-    const recordPluginInstance = RecordPlugin.create({
-      renderRecordedAudio: false,
-      continuousWaveform: false,
-    });
-    recorderRef.current = recordPluginInstance;
-    wavesurferRef.current?.registerPlugin(recordPluginInstance);
-
-    return () => {
-      recorderRef.current?.stopMic();
-      recorderRef.current?.stopRecording();
-      recorderRef.current?.destroy();
-    };
-  }, [useMic]);
-
-  useEffect(() => {
-    if (!recorderRef.current) return;
-    const onRecordEnd = (blob: Blob) => {
-      setAudioBlob(blob);
-    };
-    recorderRef.current.on("record-end", onRecordEnd);
-    return () => {
-      recorderRef.current?.un("record-end", onRecordEnd); // Cleanup event listener
-    };
-  }, [setAudioBlob]);
+  }, [waveColor]);
 
   const start = useCallback(async () => {
-    if (recorderRef.current) {
-      await recorderRef.current.startRecording();
-    }
-  }, []);
+    try {
+      if (!waveformRef.current) return;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+      mediaStreamSourceRef.current =
+        waveformRef.current.audioCtx.createMediaStreamSource(stream);
+      waveformRef.current.volume = 0;
+      waveformRef.current.connectInput(mediaStreamSourceRef.current);
+      recorderRef.current = new MediaRecorder(stream);
+      recorderRef.current.start();
+      recorderRef.current?.addEventListener("dataavailable", (e) => {
+        if (e.data.size > 0) {
+          recordingChunksRef.current?.push(e.data);
+        }
+      });
 
-  const stop = useCallback(async () => {
-    if (recorderRef.current) {
-      await recorderRef.current.stopRecording();
-    }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
-    try {
-      if (!url) return;
-      wavesurferRef.current?.load(url);
-    } catch (error) {
-      console.log(error);
-    }
-  }, [url]);
+    const handler = () => {
+      if (!recordingChunksRef.current) return;
+      const blob = new Blob(recordingChunksRef.current, {
+        type: "audio/ogg; codecs=opus",
+      });
+      onRecordEnd(blob);
+      recordingChunksRef.current = [];
+    };
+    recorderRef.current?.addEventListener("stop", handler);
+    return () => {
+      recorderRef.current?.removeEventListener("stop", handler);
+    };
+  }, [onRecordEnd]);
 
-  return { start, stop, waveformRef, wavesurferRef };
+  const stop = useCallback(async () => {
+    recorderRef.current?.stop();
+    waveformRef.current?.disconnectInput(mediaStreamSourceRef.current, true);
+  }, []);
+
+  return { start, stop, targetRef };
 };
+
+type UseMediaWaveformProps = {
+  waveColor?: string;
+  source: HTMLMediaElement | null;
+};
+
+export const useMediaWaveform = (options: UseMediaWaveformProps) => {
+  const { waveColor = "#ede6d8", source } = options;
+  const targetRef = useRef<HTMLDivElement>(null);
+  const waveformRef = useRef<AudioMotionAnalyzer | null>(null);
+
+  useEffect(() => {
+    if (!targetRef.current) return;
+    if (!source) return;
+    waveformRef.current = createAudioMotionAnalyzer(targetRef.current, {
+      ...audioMotionDefaultOptions,
+      source,
+      waveColor,
+    });
+    return () => {
+      waveformRef.current?.destroy();
+    };
+  }, [source, waveColor]);
+
+  return { waveformRef, targetRef };
+};
+
+const audioMotionDefaultOptions: AudioMotionOptions = {
+  mode: 10,
+  barSpace: 0.6,
+  showBgColor: false,
+  bgAlpha: 0,
+  showScaleX: false,
+  overlay: true,
+  reflexRatio: 0.5,
+  reflexAlpha: 1,
+  alphaBars: true,
+  showPeaks: false,
+};
+
+function createAudioMotionAnalyzer(
+  target: HTMLElement,
+  { waveColor, ...options }: AudioMotionOptions & { waveColor: string },
+) {
+  const analyzer = new AudioMotionAnalyzer(target, {
+    ...audioMotionDefaultOptions,
+    ...options,
+  });
+  analyzer.registerGradient("wave-color", {
+    bgColor: "transparent",
+    colorStops: [waveColor],
+  });
+  analyzer.setOptions({
+    gradient: "wave-color",
+  });
+  return analyzer;
+}
