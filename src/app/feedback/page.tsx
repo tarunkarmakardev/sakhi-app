@@ -84,12 +84,10 @@ export default function Page() {
         />
       )}
       <div className="bg-elevated p-4 lg:p-8 w-full rounded-3xl">
-        <div className="text-md lg:text-2xl font-medium mb-2 lg:mb-8">
-          సారాంశం
-        </div>
+        
         {getQuery.isFetching ? (
           <div className="flex flex-col gap-2 w-full h-full min-h-[200px] items-center justify-center">
-            <Loader /> అభిప్రాయాన్ని రూపొందిస్తోంది...
+            <Loader />
           </div>
         ) : (
           <>
