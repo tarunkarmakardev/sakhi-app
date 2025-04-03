@@ -38,5 +38,5 @@ export const videoConfig = {
 
 export const audioUrls = {
   start:
-    "https://public-content-dp.s3.us-east-2.amazonaws.com/9213058a5dab4774a6462b15dbdedf53.mp3",
+    "https://public-content-dp.s3.us-east-2.amazonaws.com/welcome_audio.mp3",
 };
