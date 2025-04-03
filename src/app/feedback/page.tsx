@@ -84,7 +84,6 @@ export default function Page() {
         />
       )}
       <div className="bg-elevated p-4 lg:p-8 w-full rounded-3xl">
-        
         {getQuery.isFetching ? (
           <div className="flex flex-col gap-2 w-full h-full min-h-[200px] items-center justify-center">
             <Loader />
