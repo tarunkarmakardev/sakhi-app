@@ -1,5 +1,6 @@
 "use client";
 import "regenerator-runtime/runtime";
+
 import {
   useMediaWaveform,
   useMicWaveform,
@@ -11,8 +12,8 @@ import { useGlobalStore } from "@/features/global-store/context";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa";
-import SakhiAvatar from "@/features/sakhi-avatar";
 import { cn } from "@/lib/classnames";
+import { useParticles } from "@/features/particles";
 
 export type FeedbackStepType = "START" | "LISTEN";
 
@@ -22,7 +23,7 @@ export default function Page() {
   const setAudioBlob = useGlobalStore((s) => s.setAudioBlob);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [step, setStep] = useState<FeedbackStepType | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const particles = useParticles();
   const micWaveform = useMicWaveform({
     onRecordEnd: (data) => {
       setAudioBlob(data);
@@ -30,6 +31,9 @@ export default function Page() {
   });
   const audioWaveform = useMediaWaveform({
     source: audioRef.current,
+    onRender: (instance) => {
+      particles.startAnimation(instance.getEnergy());
+    },
   });
   const {
     listening,
@@ -45,36 +49,31 @@ export default function Page() {
       await audioRef.current.play();
       audioRef.current.volume = 1;
     }
-
     setStep("START");
-    setPlaying(true);
   };
 
   const handleStop = async () => {
     await stopListening();
+    await audioWaveform.stop();
     await micWaveform.stop();
-    setPlaying(false);
   };
 
   return (
     <div className="grid h-[calc(100vh-180px)] grid-rows-[minmax(200px,500px)_120px_100px_44px] w-full">
       <div className="place-self-center h-[150px]">
-        <SakhiAvatar
-          containerProps={{
-            className: cn("h-[150px]", { "animate-audio-bot": playing }),
-          }}
-        />
+        <canvas ref={particles.canvasRef} width={200} height={200} />
         <audio
           crossOrigin="anonymous"
           ref={audioRef}
           src={audioUrls.start}
           controls={false}
           preload="auto"
-          onEnded={() => {
-            setPlaying(false);
+          onEnded={async () => {
+            await audioWaveform.stop();
+            await startListening();
+            await micWaveform.start();
+            particles.reset();
             setStep("LISTEN");
-            startListening();
-            micWaveform.start();
           }}
         />
       </div>
