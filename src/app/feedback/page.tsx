@@ -1,4 +1,6 @@
 "use client";
+import "regenerator-runtime/runtime";
+
 import { apiEndpoints, navigationUrls } from "@/config";
 import { useGlobalStore } from "@/features/global-store/context";
 import { useQuery } from "@tanstack/react-query";
@@ -7,15 +9,21 @@ import { RxCross2 } from "react-icons/rx";
 import { GoAlertFill } from "react-icons/go";
 import { FeedbackPostData, FeedbackPostPayload } from "@/schemas/feedback";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Loader from "@/features/loader";
-import { cn } from "@/lib/classnames";
-import SakhiAvatar from "@/features/sakhi-avatar";
+import { useParticles } from "@/features/particles";
+import { useMediaWaveform } from "@/features/speech-recognition";
 
 export default function Page() {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
   const router = useRouter();
+  const particles = useParticles();
+  const mediaWaveform = useMediaWaveform({
+    source: audioRef.current,
+    onRender: (instance) => {
+      particles.startAnimation(instance.getEnergy());
+    },
+  });
   const language = useGlobalStore((s) => s.language);
   const audioBlob = useGlobalStore((s) => s.audioBlob);
   const setFeedback = useGlobalStore((s) => s.setFeedback);
@@ -61,18 +69,19 @@ export default function Page() {
     getQuery.data?.criticalComplaints || {};
 
   useEffect(() => {
-    setPlaying(true);
     audioRef.current?.play();
   }, [audioUrl]);
 
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
-      <SakhiAvatar
-        containerProps={{
-          className: cn("h-[150px]", { "animate-audio-bot": playing }),
-        }}
+      <canvas ref={particles.canvasRef} width={200} height={200} />
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        controls={false}
+        crossOrigin="anonymous"
       />
-      <audio ref={audioRef} src={audioUrl} controls={false} />
+      <div ref={mediaWaveform.targetRef} className="h-[64px]" />
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>

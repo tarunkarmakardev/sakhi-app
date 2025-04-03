@@ -127,10 +127,11 @@ export const useMicWaveform = (options: UseMicWaveformOptions) => {
 type UseMediaWaveformProps = {
   waveColor?: string;
   source: HTMLMediaElement | null;
+  onRender?: (instance: AudioMotionAnalyzer) => void;
 };
 
 export const useMediaWaveform = (options: UseMediaWaveformProps) => {
-  const { waveColor = "#ede6d8", source } = options;
+  const { waveColor = "#ede6d8", source, onRender } = options;
   const targetRef = useRef<HTMLDivElement>(null);
   const waveformRef = useRef<AudioMotionAnalyzer | null>(null);
 
@@ -147,7 +148,17 @@ export const useMediaWaveform = (options: UseMediaWaveformProps) => {
     };
   }, [source, waveColor]);
 
-  return { waveformRef, targetRef };
+  useEffect(() => {
+    if (!waveformRef.current) return;
+    waveformRef.current.setOptions({ onCanvasDraw: onRender });
+  }, [onRender]);
+
+  const stop = useCallback(async () => {
+    waveformRef.current?.stop();
+    waveformRef.current?.destroy();
+  }, []);
+
+  return { waveformRef, targetRef, stop };
 };
 
 const audioMotionDefaultOptions: AudioMotionOptions = {
