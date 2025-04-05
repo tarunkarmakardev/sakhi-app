@@ -62,6 +62,7 @@ export default function Page() {
     refetchOnWindowFocus: false,
   });
 
+  const { isFetching } = getQuery;
   const { audioUrl } = getQuery.data || {};
   const { generalFeedback = {}, personalFeedback = {} } =
     getQuery.data?.categories || {};
@@ -69,8 +70,9 @@ export default function Page() {
     getQuery.data?.criticalComplaints || {};
 
   useEffect(() => {
+    if (isFetching) return;
     audioRef.current?.play();
-  }, [audioUrl]);
+  }, [audioUrl, isFetching]);
 
   return (
     <div className="flex flex-col gap-2 lg:gap-6 items-center">
