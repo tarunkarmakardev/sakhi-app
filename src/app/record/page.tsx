@@ -100,8 +100,7 @@ export default function Page() {
           <Actions
             transcript={transcript}
             onCancel={async () => {
-              await handleStop();
-              setStep(null);
+              window.location.reload();
             }}
             onSubmit={async () => {
               await handleStop();
