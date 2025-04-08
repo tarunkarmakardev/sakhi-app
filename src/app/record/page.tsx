@@ -52,7 +52,6 @@ export default function Page() {
   };
 
   const handleStop = async () => {
-    console.log("here");
     await stopListening();
     await audioWaveform.stop();
     await micWaveform.stop();

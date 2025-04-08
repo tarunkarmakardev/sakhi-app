@@ -20,6 +20,7 @@ const eslintConfig = [
   {
     files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     rules: {
+      "no-console": "warn",
       "react/react-in-jsx-scope": "off",
       "prettier/prettier": [
         "error",

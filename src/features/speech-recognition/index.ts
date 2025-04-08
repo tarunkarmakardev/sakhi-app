@@ -12,10 +12,16 @@ export const useSpeechRecognition = ({
   language = "en-US",
 }: UseSpeechRecognitionOptions) => {
   const [transcript, setTranscript] = useState("");
-  const { listen, listening, stop } = useBaseSpeechRecognition({
+  const { listen, listening, stop, supported } = useBaseSpeechRecognition({
     onResult: (result) => {
       setTranscript(result as unknown as string);
     },
+  });
+
+  // eslint-disable-next-line no-console
+  console.log({
+    supported,
+    listening,
   });
 
   const start = useCallback(async () => {
