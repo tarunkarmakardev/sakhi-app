@@ -40,6 +40,7 @@ export default function Page() {
     transcript,
     start: startListening,
     stop: stopListening,
+    reset,
   } = useSpeechRecognition({
     language,
   });
@@ -54,6 +55,7 @@ export default function Page() {
 
   const handleStop = async () => {
     await stopListening();
+    await reset();
     await audioWaveform.stop();
     await micWaveform.stop();
   };
