@@ -1,5 +1,4 @@
 "use client";
-import "regenerator-runtime/runtime";
 
 import {
   useMediaWaveform,
@@ -40,7 +39,6 @@ export default function Page() {
     transcript,
     start: startListening,
     stop: stopListening,
-    reset,
   } = useSpeechRecognition({
     language,
   });
@@ -54,8 +52,8 @@ export default function Page() {
   };
 
   const handleStop = async () => {
+    console.log("here");
     await stopListening();
-    await reset();
     await audioWaveform.stop();
     await micWaveform.stop();
   };

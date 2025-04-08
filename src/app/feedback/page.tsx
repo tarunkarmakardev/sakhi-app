@@ -1,5 +1,4 @@
 "use client";
-import "regenerator-runtime/runtime";
 
 import { apiEndpoints, navigationUrls } from "@/config";
 import { useGlobalStore } from "@/features/global-store/context";

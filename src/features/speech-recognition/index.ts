@@ -1,53 +1,32 @@
-import { useCallback, useEffect, useRef } from "react";
-import SpeechRecognition, {
-  useSpeechRecognition as useBaseSpeechRecognition,
-} from "react-speech-recognition";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AudioMotionAnalyzer, {
   ConstructorOptions as AudioMotionOptions,
 } from "audiomotion-analyzer";
+import { useSpeechRecognition as useBaseSpeechRecognition } from "react-speech-kit";
 
 type UseSpeechRecognitionOptions = {
   language?: string;
 };
 
 export const useSpeechRecognition = ({
-  language,
+  language = "en-US",
 }: UseSpeechRecognitionOptions) => {
-  const speechToText = useBaseSpeechRecognition();
-  const { resetTranscript, listening } = speechToText;
-  const isSupported = SpeechRecognition.browserSupportsSpeechRecognition();
+  const [transcript, setTranscript] = useState("");
+  const { listen, listening, stop } = useBaseSpeechRecognition({
+    onResult: (result) => {
+      setTranscript(result as unknown as string);
+    },
+  });
 
   const start = useCallback(async () => {
-    if (!listening) {
-      await SpeechRecognition.startListening({ continuous: true, language });
-    }
-  }, [language, listening]);
-
-  const stop = useCallback(async () => {
-    if (!listening) return;
-    await SpeechRecognition.stopListening();
-  }, [listening]);
-
-  const toggleListening = useCallback(async () => {
-    if (listening) {
-      await stop();
-      return;
-    }
-    await start();
-  }, [listening, start, stop]);
-
-  const reset = useCallback(async () => {
-    if (listening) await stop();
-    resetTranscript();
-  }, [listening, resetTranscript, stop]);
+    listen({ lang: language, interimResults: true });
+  }, [listen, language]);
 
   return {
-    isSupported,
-    toggleListening,
-    reset,
     start,
     stop,
-    ...speechToText,
+    listening,
+    transcript,
   };
 };
 
