@@ -2,7 +2,9 @@ import { navigationUrls } from "@/config";
 import { redirect } from "next/navigation";
 
 export default function Home() {
-  return redirect(navigationUrls.record);
+  redirect(navigationUrls.record);
+  return null;
+
   // return (
   //   <div className="flex gap-12 items-center">
   //     <SakhiAvatar />

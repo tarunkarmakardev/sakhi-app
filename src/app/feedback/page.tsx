@@ -87,7 +87,7 @@ export default function Page() {
       <div className="mb-2 lg:mb-4 text-lg lg:text-4xl font-bold">
         మీ అభిప్రాయం తెలియచేసినందుకు ధన్యవాదాలు!
       </div>
-      {alertTrigger && (
+      {!getQuery.isFetching && alertTrigger && (
         <Alert
           text={`This form has been flagged for ${criticalTypes?.join(
             ", ",
