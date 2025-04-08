@@ -99,7 +99,7 @@ export default function Page() {
             transcript={transcript}
             onCancel={async () => {
               await handleStop();
-              router.push(navigationUrls.home);
+              setStep(null);
             }}
             onSubmit={async () => {
               await handleStop();
